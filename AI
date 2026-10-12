@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="QazaqTravel AI — Қазақстан бойынша туристерге арналған ЖИ чат-бот">
+<title>QazaqTravel AI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Serif:wght@600;800&display=swap">
+<style>
+/* Layout: оқылатын сол жақ баған + жоспарлаушы; төменде бағыттар кестесі мен сұхбат. Қасиет: сызықтық "жол картасы" стилі. */
+:root{
+  --bg:#f1f5f6; --surface:#ffffff; --ink:#0f2230; --muted:#546a79; --line:#d5e0e4;
+  --accent:#0b7a86; --accent-ink:#ffffff; --gold:#c8920f; --ridge:#cfe0e4; --user:#0f2230; --user-ink:#f1f5f6;
+  --serif:"Noto Serif","Times New Roman",serif; --sans:"Noto Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0b1a22; --surface:#112733; --ink:#e6eff2; --muted:#93aab6; --line:#22404f;
+  --accent:#3cc3cf; --accent-ink:#06222a; --gold:#e3b23c; --ridge:#16323f; --user:#e6eff2; --user-ink:#0b1a22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b1a22; --surface:#112733; --ink:#e6eff2; --muted:#93aab6; --line:#22404f;
+  --accent:#3cc3cf; --accent-ink:#06222a; --gold:#e3b23c; --ridge:#16323f; --user:#e6eff2; --user-ink:#0b1a22; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;padding-inline:max(16px,4vw);padding-block:0}
+.wrap{max-width:1120px;margin:0 auto}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:20px;flex-wrap:wrap}
+.logo{font-family:var(--serif);font-weight:800;font-size:22px;letter-spacing:-.02em}
+.logo b{color:var(--accent);font-weight:800}
+nav{display:flex;gap:20px;font-size:14px;font-weight:600;flex-wrap:wrap}
+nav a{color:var(--muted);text-decoration:none}nav a:hover{color:var(--accent)}
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:40px;align-items:start;padding-block:32px 48px}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--serif);font-weight:800;font-size:clamp(34px,5vw,56px);line-height:1.08;letter-spacing:-.025em;margin:12px 0 16px;text-wrap:balance}
+.lead{color:var(--muted);max-width:52ch;margin:0 0 20px}
+.facts{display:flex;gap:28px;flex-wrap:wrap;margin:0;padding:18px 0 0;border-top:1px solid var(--line)}
+.facts div{min-width:0}
+.facts dt{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.facts dd{margin:2px 0 0;font-family:var(--serif);font-weight:800;font-size:24px;font-variant-numeric:tabular-nums}
+.planner{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;display:grid;gap:16px}
+.planner h2{font-family:var(--serif);font-size:20px;margin:0}
+label,.lbl{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
+select,input[type=text],textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.chip span{display:inline-block;padding:7px 13px;border:1px solid var(--line);border-radius:99px;font-size:14px;background:var(--bg);color:var(--ink)}
+.chip input:checked+span{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chip input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:13px 20px;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--line);padding:7px 12px;font-size:13px}
+section{padding-block:36px}
+h2.sec{font-family:var(--serif);font-size:clamp(24px,3vw,32px);letter-spacing:-.02em;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 22px;max-width:60ch}
+.table{border-top:2px solid var(--ink)}
+.dest{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr) minmax(0,.9fr) auto;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+.dest h3{font-family:var(--serif);font-size:19px;margin:0}
+.dest p{margin:2px 0 0;font-size:14px;color:var(--muted)}
+.meta small{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.meta span{font-variant-numeric:tabular-nums;font-weight:600}
+.ridge{display:block;width:100%;height:auto;color:var(--ridge)}
+.chat-shell{display:grid;grid-template-columns:minmax(0,280px) minmax(0,1fr);gap:28px;align-items:start}
+.quick{display:grid;gap:10px}
+.quick button{font:inherit;text-align:left;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px 14px;cursor:pointer;font-size:14px}
+.quick button:hover{border-color:var(--accent);color:var(--accent)}
+.chat{background:var(--surface);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-width:0}
+.chat-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.chat-top strong{font-family:var(--serif)}
+.status{font-size:12px;color:var(--muted)}
+.log{height:420px;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px}
+.msg{max-width:88%;padding:11px 14px;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px}
+.msg.bot{background:var(--bg);align-self:flex-start;border-top-left-radius:3px}
+.msg.user{background:var(--user);color:var(--user-ink);align-self:flex-end;border-top-right-radius:3px}
+.msg .copy{display:block;margin-top:8px}
+.send{display:flex;gap:10px;padding:14px;border-top:1px solid var(--line)}
+.send input{flex:1;min-width:0}
+.note{font-size:13px;color:var(--muted);margin:14px 0 0}
+footer{padding-block:28px 40px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+@media (max-width:860px){
+  .hero,.chat-shell{grid-template-columns:minmax(0,1fr)}
+  .dest{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .dest .go{grid-column:1/-1;justify-self:start}
+  .quick{grid-template-columns:1fr 1fr}
+}
+@media (max-width:520px){.quick{grid-template-columns:1fr}.row{grid-template-columns:1fr}.log{height:360px}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+body{margin:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo">QazaqTravel <b>AI</b></div>
+  <nav><a href="#baghyt">Бағыттар</a><a href="#komekshi">ЖИ көмекші</a><a href="#turaly">Жоба туралы</a></nav>
+</header>
+
+<div class="hero">
+  <div>
+    <div class="kicker">Қазақстан бойынша туристік көмекші</div>
+    <h1>Сапарыңызды сұрақтан бастап, маршрутқа дейін біз жоспарлаймыз</h1>
+    <p class="lead">Қайда барарыңызды, неше күн және қанша адам екеніңізді айтыңыз. ЖИ көмекші күн сайынғы маршрут құрап, көлік пен маусым бойынша кеңес береді. Нақты баға мен кестені әрдайым ресми дереккөзден тексеріңіз.</p>
+    <dl class="facts">
+      <div><dt>Ұзындығы</dt><dd>154 км</dd><small style="color:var(--muted);font-size:12px">Шарын шатқалы</small></div>
+      <div><dt>Биіктігі</dt><dd>~1 800 м</dd><small style="color:var(--muted);font-size:12px">Көлсайдың бірінші көлі</small></div>
+      <div><dt>ЮНЕСКО</dt><dd>2003</dd><small style="color:var(--muted);font-size:12px">Қожа Ахмет Яссауи кесенесі</small></div>
+    </dl>
+  </div>
+
+  <form class="planner" id="plan" aria-labelledby="planTitle">
+    <h2 id="planTitle">Сапар жоспарлаушы</h2>
+    <div>
+      <label for="dest">Бағыт</label>
+      <select id="dest">
+        <option>Алматы</option><option>Шарын шатқалы</option><option>Көлсай мен Қайыңды</option>
+        <option>Түркістан</option><option>Бурабай</option><option>Маңғыстау</option><option>Астана</option>
+      </select>
+    </div>
+    <div class="row">
+      <div><label for="days">Күн саны</label>
+        <select id="days"><option>1 күн</option><option selected>2–3 күн</option><option>4–7 күн</option><option>1 аптадан көп</option></select></div>
+      <div><label for="people">Адам саны</label>
+        <select id="people"><option>1 адам</option><option selected>2 адам</option><option>3–4 адам</option><option>5 және одан көп</option></select></div>
+    </div>
+    <div>
+      <div class="lbl">Қызығушылық</div>
+      <div class="chips" id="interests">
+        <label class="chip"><input type="checkbox" value="табиғат" checked><span>Табиғат</span></label>
+        <label class="chip"><input type="checkbox" value="тарих"><span>Тарих</span></label>
+        <label class="chip"><input type="checkbox" value="ұлттық тағам"><span>Ұлттық тағам</span></label>
+        <label class="chip"><input type="checkbox" value="отбасымен демалыс"><span>Отбасымен</span></label>
+        <label class="chip"><input type="checkbox" value="белсенді демалыс"><span>Белсенді</span></label>
+      </div>
+    </div>
+    <div>
+      <label for="budget">Бюджет (теңгемен, міндетті емес)</label>
+      <input type="text" id="budget" inputmode="numeric" placeholder="Мысалы, 150 000">
+    </div>
+    <button class="btn" type="submit">Маршрут құрастыру</button>
+  </form>
+</div>
+
+<svg class="ridge" viewBox="0 0 1200 90" preserveAspectRatio="none" aria-hidden="true"><path fill="currentColor" d="M0 90V58l90-26 70 22 110-44 80 38 90-20 120 40 100-52 90 34 110-12 80 30 110-34 90 36 70-18 60 10V90z"/></svg>
+
+<section id="baghyt">
+  <h2 class="sec">Танымал бағыттар</h2>
+  <p class="sub">Әр бағытты бір басумен чатқа жіберіп, жеке жоспар сұраңыз. Мерзімдер шамамен берілген.</p>
+  <div class="table" role="list">
+    <div class="dest" role="listitem"><div><h3>Алматы</h3><p>Қала, Медеу мен Шымбұлақ</p></div><div class="meta"><small>Өңір</small><span>Алматы</span></div><div class="meta"><small>Қолайлы маусым</small><span>Жыл бойы</span></div><button class="btn ghost go" data-q="Алматыға сапар жоспарын құрастыр">Жоспар сұрау</button></div>
+    <div class="dest" role="listitem"><div><h3>Шарын шатқалы</h3><p>Қызыл жартастар, «Арманды аңғар»</p></div><div class="meta"><small>Өңір</small><span>Алматы облысы</span></div><div class="meta"><small>Қолайлы маусым</small><span>Сәуір–маусым, қыркүйек–қазан</span></div><button class="btn ghost go" data-q="Шарын шатқалына бір күндік сапар жоспарын құрастыр">Жоспар сұрау</button></div>
+    <div class="dest" role="listitem"><div><h3>Көлсай мен Қайыңды</h3><p>Тау көлдері, ну орман</p></div><div class="meta"><small>Өңір</small><span>Алматы облысы</span></div><div class="meta"><small>Қолайлы маусым</small><span>Мамыр–қыркүйек</span></div><button class="btn ghost go" data-q="Көлсай мен Қайыңды көліне 2 күндік сапар жоспарын құрастыр">Жоспар сұрау</button></div>
+    <div class="dest" role="listitem"><div><h3>Түркістан</h3><p>Қожа Ахмет Яссауи кесенесі</p></div><div class="meta"><small>Өңір</small><span>Түркістан облысы</span></div><div class="meta"><small>Қолайлы маусым</small><span>Көктем мен күз</span></div><button class="btn ghost go" data-q="Түркістанның тарихи орындарына 2 күндік маршрут құрастыр">Жоспар сұрау</button></div>
+    <div class="dest" role="listitem"><div><h3>Бурабай</h3><p>Көлдер мен қарағайлы орман</p></div><div class="meta"><small>Өңір</small><span>Ақмола облысы</span></div><div class="meta"><small>Қолайлы маусым</small><span>Маусым–тамыз, қыста да болады</span></div><button class="btn ghost go" data-q="Бурабайға отбасылық сапар жоспарын құрастыр">Жоспар сұрау</button></div>
+    <div class="dest" role="listitem"><div><h3>Маңғыстау</h3><p>Бозжыра, Үстірт, Төрт-қара</p></div><div class="meta"><small>Өңір</small><span>Маңғыстау облысы</span></div><div class="meta"><small>Қолайлы маусым</small><span>Көктем мен күз</span></div><button class="btn ghost go" data-q="Маңғыстауға 4 күндік маршрут құрастыр">Жоспар сұрау</button></div>
+  </div>
+</section>
+
+<section id="komekshi">
+  <h2 class="sec">ЖИ көмекші</h2>
+  <p class="sub">Сұрағыңызды жазыңыз немесе дайын сұрақтардың бірін таңдаңыз.</p>
+  <div class="chat-shell">
+    <div class="quick" id="quick">
+      <button data-q="Алматыға бір күндік маршрут құрастырып бер">Алматыға бір күндік маршрут</button>
+      <button data-q="Шарын шатқалына қалай жетуге болады?">Шарынға қалай жетемін?</button>
+      <button data-q="Отбасылық сапарға қандай бағыт ұсынасың?">Отбасылық сапар үшін бағыт</button>
+      <button data-q="Қазақстанның ұлттық тағамдарынан не татып көру керек?">Не татып көру керек?</button>
+      <button data-q="Сапарға не алу керек, қауіпсіздік бойынша кеңес бер">Не алу керек, қауіпсіздік</button>
+    </div>
+    <div class="chat">
+      <div class="chat-top"><strong>QazaqTravel AI</strong><span class="status" id="status">Қосылуда…</span><button class="btn ghost" id="clear" type="button">Тазалау</button></div>
+      <div class="log" id="log" aria-live="polite"></div>
+      <form class="send" id="send"><input type="text" id="msg" placeholder="Сұрағыңызды жазыңыз…" autocomplete="off" aria-label="Хабарлама"><button class="btn" type="submit" id="go">Жіберу</button></form>
+    </div>
+  </div>
+  <p class="note">Көмекші қате жіберуі мүмкін. Баға, жұмыс уақыты және көлік кестесін сапар алдында ресми дереккөзден тексеріңіз.</p>
+</section>
+
+<section id="turaly">
+  <h2 class="sec">Жоба туралы</h2>
+  <p class="sub" style="max-width:70ch">QazaqTravel AI туристермен өзара әрекеттесуді автоматтандырады: жиі қойылатын сұрақтарға жауап береді, маршрут құрастырады және сапар алдындағы ақпаратты жинайды. Көмекші қазақ тілінде жұмыс істейді, пайдаланушы басқа тілде жазса, сол тілде жауап береді.</p>
+</section>
+
+<footer><span>QazaqTravel AI · оқу жобасы · 2026</span><span>Қазақстанды бірге зерттейік</span></footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const log=$('log'),msg=$('msg'),statusEl=$('status'),goBtn=$('go');
+const GREET='Сәлем! Мен — QazaqTravel AI. Қазақстан бойынша бағыт, маршрут, көлік және сапарға дайындық туралы сұраңыз.\n\nҚайда барғыңыз келеді?';
+const RULES=`Сен — QazaqTravel AI, Қазақстан бойынша туристерге арналған виртуалды көмекшісің.
+Ережелер:
+1. Пайдаланушы қай тілде жазса, сол тілде жауап бер (әдепкі — қазақ тілі).
+2. Тек туризм мен саяхатқа қатысты сұрақтарға жауап бер. Басқа тақырыпта сыпайы түрде саяхатқа қайт.
+3. Жауап қысқа болсын (150–220 сөз). Маркдаун белгілерін (*, #, **) қолданба. Маршрутты "1.", "2." деп нөмірлеп, уақытымен жаз.
+4. Нақты баға, жұмыс уақыты, рейс кестесі, қонақүй қолжетімділігін ойдан шығарма; олар өзгеретінін айтып, ресми дереккөзден тексеруді ұсын. Шамамен баға айтсаң, шамамен екенін ескерт.
+5. Білмесең, ашық айт.
+6. Ақпарат жеткіліксіз болса, соңында бір-екі нақтылаушы сұрақ қой.
+7. Қауіпті немесе заңсыз әрекетке кеңес берме; табиғатты сақтауды және қауіпсіздікті ескерт.`;
+
+// ЖИ серверінің мекенжайы (мысалы, https://sizdin-server.onrender.com/api/chat). Бос болса, чат демо режимінде жұмыс істейді.
+const API_URL='';
+let history=[],busy=false,sample=null;
+
+function add(text,who){
+  const d=document.createElement('div');d.className='msg '+who;d.textContent=text;
+  log.appendChild(d);log.scrollTop=log.scrollHeight;return d;
+}
+function reset(){log.innerHTML='';history=[];add(GREET,'bot')}
+function addCopy(el){
+  const b=document.createElement('button');b.type='button';b.className='btn ghost copy';b.textContent='Көшіру';
+  b.onclick=async()=>{
+    const t=el.firstChild.textContent;
+    try{await navigator.clipboard.writeText(t);b.textContent='Көшірілді'}
+    catch(e){const r=document.createRange();r.selectNodeContents(el.firstChild);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Мәтін таңдалды'}
+    setTimeout(()=>b.textContent='Көшіру',1800);
+  };
+  el.appendChild(b);
+}
+
+function demo(q){
+  const s=q.toLowerCase();
+  if(s.includes('алматы')||s.includes('маршрут'))return 'Алматыға бір күндік шамамен жоспар:\n\n1. Таңертең — Медеу жағасында серуен.\n2. Түскі уақыт — Шымбұлақ бағытында тау көрінісі (ауа райын алдын ала тексеріңіз).\n3. Түстен кейін — Көктөбе төбесінен қала панорамасы.\n4. Кешке — Панфилов саябағы мен қала орталығы.\n\nКөлік жолы мен билет бағасын сапар алдында ресми дереккөзден тексеріңіз. Неше адам барасыз?';
+  if(s.includes('шарын'))return 'Шарын шатқалы — Алматы облысындағы танымал табиғи нысан, ұзындығы шамамен 154 км. Бір күндік сапарға ерте шыққан дұрыс. Жол уақытын, маусымдық ауа райын және кіру тәртібін алдын ала тексеріңіз. Алматыдан барасыз ба, қанша адамсыз?';
+  if(s.includes('отбас'))return 'Отбасылық сапарға Бурабай (көл мен орман) немесе Алматы (саябақтар, музейлер) қолайлы. Балалардың жасын, сапар ұзақтығын және бюджетті айтсаңыз, нақты жоспар ұсынамын.';
+  if(s.includes('тағам'))return 'Татып көруге болатындар: бесбармақ, қазы-қарта, қымыз, шұбат, бауырсақ және көже. Аллергияңыз бар болса, тапсырыс алдында ас үйден сұраңыз.';
+  if(s.includes('қауіпсіз')||s.includes('алу керек'))return 'Тау бағыттарына ыңғайлы аяқ киім, қабат киім, су, күннен қорғайтын құрал және зарядталған телефон алыңыз. Белгіленген соқпақтан шықпаңыз, ауа райын тексеріп, жоспарыңызды жақындарыңызға айтып кетіңіз.';
+  return 'Бұл — демо режим: нақты ЖИ жауабы қосылмаған. Бағытты, күн санын және қызығушылығыңызды жазсаңыз, дайын жауаптардың бірін көрсетемін.';
+}
+
+async function ask(q){
+  q=(q||'').trim();if(!q||busy)return;
+  busy=true;goBtn.disabled=true;
+  add(q,'user');msg.value='';
+  const out=add('Жауап дайындап жатырмын…','bot');
+  let reply='';
+  const transcript=history.slice(-10).map(m=>(m.role==='user'?'Турист: ':'Көмекші: ')+m.content).join('\n');
+  const input=RULES+'\n\nАлдыңғы әңгіме:\n'+(transcript||'(жоқ)')+'\n\nТуристтің жаңа сұрағы: '+q+'\n\nТек көмекшінің жауабын жаз.';
+  try{
+    if(sample){
+      const r=await sample(input,{cache:false,modelTier:'quick',onText:({text})=>{out.textContent=text;log.scrollTop=log.scrollHeight}});
+      reply=(r.text||'').trim()||'Жауап алынбады.';
+    }else if(API_URL){
+      const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,history:history.slice(-12)})});
+      if(r.status===429)throw {code:'rate_limited'};
+      if(!r.ok)throw new Error('api');
+      reply=((await r.json()).reply||'').trim()||'Жауап алынбады.';
+    }else throw {code:'no_ai'};
+  }catch(e){
+    if(e&&e.code==='rate_limited')reply='Сұраныс тым көп. Біраз күтіп, қайталап көріңіз.';
+    else{reply=demo(q);statusEl.textContent='Демо режим'}
+  }
+  out.textContent=reply;
+  addCopy(out);
+  history.push({role:'user',content:q},{role:'assistant',content:reply});
+  busy=false;goBtn.disabled=false;log.scrollTop=log.scrollHeight;
+}
+
+$('send').addEventListener('submit',e=>{e.preventDefault();ask(msg.value)});
+$('clear').addEventListener('click',reset);
+document.querySelectorAll('[data-q]').forEach(b=>b.addEventListener('click',()=>{$('komekshi').scrollIntoView({behavior:'smooth'});ask(b.dataset.q)}));
+$('plan').addEventListener('submit',e=>{
+  e.preventDefault();
+  const ints=[...document.querySelectorAll('#interests input:checked')].map(i=>i.value).join(', ')||'жалпы';
+  const bud=$('budget').value.trim();
+  const q=`${$('dest').value} бағытына ${$('days').value} сапар жоспарын құрастыр. Саяхатшылар: ${$('people').value}. Қызығушылық: ${ints}.`+(bud?` Бюджет: ${bud} теңге.`:'')+' Күн сайынғы маршрут, көлік және шығындар бойынша кеңес бер.';
+  $('komekshi').scrollIntoView({behavior:'smooth'});ask(q);
+});
+
+reset();
+(async()=>{
+  try{sample=window.claude?.use?await window.claude.use('sample'):null}catch(e){sample=null}
+  statusEl.textContent=(sample||API_URL)?'ЖИ дайын':'Демо режим';
+})();
+</script>
+</body>
+</html>
